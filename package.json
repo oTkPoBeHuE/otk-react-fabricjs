@@ -4,10 +4,13 @@
   "private": true,
   "dependencies": {
     "deep-diff": "^1.0.1",
-    "fabric": "^2.0.1",
+    "deep-object-diff": "^1.1.0",
+    "fabric": "^1.7.22",
+    "konva": "^2.1.7",
     "object-assign": "^4.1.1",
     "react": "^16.4.1",
     "react-dom": "^16.4.1",
+    "react-konva": "^1.7.12",
     "react-scripts": "1.1.4"
   },
   "scripts": {
