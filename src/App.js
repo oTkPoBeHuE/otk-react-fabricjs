@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import { render } from 'react-dom';
 
 //import Konva from 'konva';
 //import { Stage, Layer, Image, Transformer } from 'react-konva';
@@ -151,7 +150,7 @@ export default class App extends PureComponent {
 					<button onClick={() => this.onHandleClick()}>Change Image</button>
 					<button onClick={() => this.onSave()}>Save Image</button>
 				</div>
-				{this.state.resultImage ? <img src={this.state.resultImage} /> : null}
+				{this.state.resultImage ? <img src={this.state.resultImage} alt="resutImage" /> : null}
 			</div>
 		);
 	}
