@@ -42,10 +42,7 @@ function fitImage({ image, width, height }) {
 		tmpHeight = Math.floor(tmpHeight * width / tmpWidth);
 		tmpWidth = width;
 	}
-	//
-	// console.log('!!!fitImage', image);
-	// console.log('!!!tmpWidth', tmpWidth);
-	// console.log('!!!tmpWidth', tmpWidth);
+
 	return {
 		...image,
 		height: tmpHeight,
@@ -83,7 +80,6 @@ function moveImageToCenter({ images, imageName, canvas }) {
 
 export function setCorrectImagePosition({ images, canvas, imageName, size }) {
 	let tmpImages = images;
-	//console.log('setCorrectImagePosition');
 	tmpImages = changeImageByName({
 		images: tmpImages,
 		name: imageName,
