@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Stage, Layer } from 'react-konva';
 import Image from './image.js';
 import {
-	printImageData,
+	// printImageData,
 	// getImageByName,
 	changeImageByName
 } from '../utils/utils';

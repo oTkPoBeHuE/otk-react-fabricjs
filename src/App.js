@@ -137,43 +137,32 @@ export default class App extends PureComponent {
 		return () => new Promise((resolve, reject) => setTimeout(() => resolve(), duration));
 	}
 
-	// delayPromise2(delay) {
-	// 	return data =>  setTimeout(, duration));
-	// }
-
 	onSave() {
-		const currentNumber = this.state.imageNumers[PRODUCT_IMAGE];
-		const addImage = () => this.setState({ resultImage: this.stageRef.toImage() });
-		const img = [];
+		const resultImages = [];
+		const productImages = IMAGES_LIBRARY[PRODUCT_IMAGE];
+		const currentProductImageIndex = this.state.imageNumers[PRODUCT_IMAGE];
 
-		const beforePromise = this.delayPromise(20)()
-			.then(() => this.setState({ selectedName: '' }))
-			.then(this.delayPromise(50));
+		const returnOriginalImage = () =>
+			this.changeImage(IMAGES_LIBRARY[PRODUCT_IMAGE][currentProductImageIndex], PRODUCT_IMAGE);
+		const saveImagesSet = this.setState({ resultImage: resultImages });
+		const deselectImage = () => this.setState({ selectedName: '' });
+		const deselectimagePromise = Promise.resolve().then(deselectImage);
 
-		const afterPromise = () => {
-			this.changeImage(IMAGES_LIBRARY[PRODUCT_IMAGE][currentNumber], PRODUCT_IMAGE);
-			this.setState({ resultImage: img });
-			console.log('!!!! img', img);
-		};
+		const generateResultImagePromise = (promise, currentValue, index, array) => {
+			const changeProductImageToCurrentImage = () => this.changeImage(currentValue, PRODUCT_IMAGE);
+			const saveResultImage = () => (resultImages[index] = this.stageRef.toImage());
 
-		const mainPromise = (promise, currentValue, index, array) => {
 			return promise
-				.then(() => {
-					console.log('!!!! currentValue', currentValue);
-					return this.changeImage(currentValue, PRODUCT_IMAGE);
-				})
-				.then(this.delayPromise(60))
-				.then(() => (img[index] = this.stageRef.toImage()))
-				.then(this.delayPromise(30));
+				.then(this.delayPromise(50))
+				.then(changeProductImageToCurrentImage)
+				.then(this.delayPromise(50))
+				.then(saveResultImage);
 		};
 
-		IMAGES_LIBRARY[PRODUCT_IMAGE].reduce(mainPromise, beforePromise).then(afterPromise);
-
-		// map((image, index) => {
-		// 	this.changeImage(newImage, PRODUCT_IMAGE).then(() => {
-		// 		this.setState({ selectedName: '' }, () => setTimeout(addImage, 70));
-		// 	});
-		// });
+		productImages
+			.reduce(generateResultImagePromise, deselectimagePromise)
+			.then(saveImagesSet)
+			.then(returnOriginalImage);
 	}
 
 	handleChange(event) {

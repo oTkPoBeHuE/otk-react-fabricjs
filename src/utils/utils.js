@@ -1,6 +1,3 @@
-const PRODUCT_IMAGE = 'PRODUCT_IMAGE';
-const LOGO_IMAGE = 'LOGO_IMAGE';
-
 export function printImageData(mesgae, image) {
 	console.clear();
 	console.log('------' + mesgae + '-------');
