@@ -28,7 +28,7 @@ export default class App extends PureComponent {
 		super(props);
 		this.state = {
 			number: 0,
-			resultImage: '',
+			resultImage: [],
 			selectedName: '',
 			images: {
 				[PRODUCT_IMAGE]: null,
@@ -95,19 +95,21 @@ export default class App extends PureComponent {
 	}
 
 	loadImages() {
+		//console.log('	loadImages() ');
 		const addLogoProductImage = this.setImage(tshirts[this.state.imageNumers[PRODUCT_IMAGE]], {
 			x: 15,
 			y: 15,
 			name: PRODUCT_IMAGE
 		});
 
-		const addLogoImage = this.setImage(this.state.imageNumers[LOGO_IMAGE], {
+		const addLogoImage = this.setImage(logos[this.state.imageNumers[LOGO_IMAGE]], {
 			x: 10,
 			y: 10,
 			name: LOGO_IMAGE
 		});
 
 		Promise.all([addLogoImage, addLogoProductImage]).then(values => {
+			//console.log('!!!!!!!!!!!!!!!!PromiseALL');
 			this.setState(state => ({
 				images: setCorrectImagesPositions(state)
 			}));
@@ -131,9 +133,47 @@ export default class App extends PureComponent {
 		}));
 	}
 
+	delayPromise(duration) {
+		return () => new Promise((resolve, reject) => setTimeout(() => resolve(), duration));
+	}
+
+	// delayPromise2(delay) {
+	// 	return data =>  setTimeout(, duration));
+	// }
+
 	onSave() {
+		const currentNumber = this.state.imageNumers[PRODUCT_IMAGE];
 		const addImage = () => this.setState({ resultImage: this.stageRef.toImage() });
-		this.setState({ selectedName: '' }, () => setTimeout(addImage, 60));
+		const img = [];
+
+		const beforePromise = this.delayPromise(20)()
+			.then(() => this.setState({ selectedName: '' }))
+			.then(this.delayPromise(50));
+
+		const afterPromise = () => {
+			this.changeImage(IMAGES_LIBRARY[PRODUCT_IMAGE][currentNumber], PRODUCT_IMAGE);
+			this.setState({ resultImage: img });
+			console.log('!!!! img', img);
+		};
+
+		const mainPromise = (promise, currentValue, index, array) => {
+			return promise
+				.then(() => {
+					console.log('!!!! currentValue', currentValue);
+					return this.changeImage(currentValue, PRODUCT_IMAGE);
+				})
+				.then(this.delayPromise(60))
+				.then(() => (img[index] = this.stageRef.toImage()))
+				.then(this.delayPromise(30));
+		};
+
+		IMAGES_LIBRARY[PRODUCT_IMAGE].reduce(mainPromise, beforePromise).then(afterPromise);
+
+		// map((image, index) => {
+		// 	this.changeImage(newImage, PRODUCT_IMAGE).then(() => {
+		// 		this.setState({ selectedName: '' }, () => setTimeout(addImage, 70));
+		// 	});
+		// });
 	}
 
 	handleChange(event) {
@@ -155,8 +195,8 @@ export default class App extends PureComponent {
 		this.setState({ selectedName: selectedName });
 	}
 	get selectedImage() {
-		console.log('!!this.state.images', this.state.images);
-		console.log('!!this.state.selectedName', this.state.selectedName);
+		//	console.log('!!this.state.images', this.state.images);
+		//console.log('!!this.state.selectedName', this.state.selectedName);
 		return getImageByName({ images: this.state.images, name: this.state.selectedName });
 	}
 	render() {
@@ -190,7 +230,9 @@ export default class App extends PureComponent {
 					<button onClick={() => this.onHandleClick()}>Change Image</button>
 					<button onClick={() => this.onSave()}>Save Image</button>
 				</div>
-				{this.state.resultImage ? <img src={this.state.resultImage} alt="resutImage" /> : null}
+				{this.state.resultImage.length
+					? this.state.resultImage.map((image, index) => <img src={image} key={index} alt="resutImage" />)
+					: null}
 			</div>
 		);
 	}
@@ -207,8 +249,8 @@ function setCorrectImagesPositions(state) {
 		},
 		imageName: LOGO_IMAGE,
 		size: {
-			width: 150,
-			height: 150
+			width: 160,
+			height: 160
 		}
 	});
 
@@ -220,8 +262,8 @@ function setCorrectImagesPositions(state) {
 		},
 		imageName: PRODUCT_IMAGE,
 		size: {
-			width: 480,
-			height: 480
+			width: 540,
+			height: 540
 		}
 	});
 

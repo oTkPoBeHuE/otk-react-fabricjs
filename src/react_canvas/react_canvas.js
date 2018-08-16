@@ -73,7 +73,7 @@ export default class ReactCanvas extends PureComponent {
 	}
 
 	printImage(image, index) {
-		console.log('##image', image);
+		// console.log('##image', image);
 
 		return image ? (
 			<Image
