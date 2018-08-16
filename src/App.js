@@ -4,23 +4,24 @@ import React, { PureComponent } from 'react';
 //import { Stage, Layer, Image, Transformer } from 'react-konva';
 
 import ReactCanvas from './react_canvas/react_canvas';
-import img1 from './images/img1.png';
-import img2 from './images/img2.jpeg';
-import img3 from './images/img3.png';
-import logo from './images/logo.png';
-import tshirt from './images/tshirt.jpg';
+import { logos, tshirts } from './images/images.js';
 
 import {
 	// printImageData,
-	// getImageByName,
+	getImageByName,
 	changeImageByName,
 	// scaleImage,
 	// centerImages,
-	// setCorrectImagePositions,
+	setCorrectImagePosition,
 	loadImg
 } from './utils/utils';
 
-const images = [img1, img2, img3];
+const PRODUCT_IMAGE = 'PRODUCT_IMAGE';
+const LOGO_IMAGE = 'LOGO_IMAGE';
+const IMAGES_LIBRARY = {
+	[PRODUCT_IMAGE]: tshirts,
+	[LOGO_IMAGE]: logos
+};
 
 export default class App extends PureComponent {
 	constructor(props) {
@@ -29,10 +30,17 @@ export default class App extends PureComponent {
 			number: 0,
 			resultImage: '',
 			selectedName: '',
-			images: [],
+			images: {
+				[PRODUCT_IMAGE]: null,
+				[LOGO_IMAGE]: null
+			},
 			size: 100,
 			width: 500,
-			height: 600
+			height: 600,
+			imageNumers: {
+				[PRODUCT_IMAGE]: 0,
+				[LOGO_IMAGE]: 0
+			}
 		};
 
 		this.updateImagePosition = this.updateImagePosition.bind(this);
@@ -41,7 +49,30 @@ export default class App extends PureComponent {
 		this.loadImages();
 	}
 
-	addImage(url, data) {
+	changeImage(url, name) {
+		return new Promise((resolve, reject) => {
+			loadImg(url)
+				.then(image =>
+					this.setState(
+						state => {
+							const currentImg = state.images[name];
+							return {
+								images: {
+									...state.images,
+									[name]: {
+										...currentImg,
+										image: image
+									}
+								}
+							};
+						},
+						() => resolve(this.state.images)
+					)
+				)
+				.catch(error => reject(error));
+		});
+	}
+	setImage(url, data) {
 		return new Promise((resolve, reject) => {
 			loadImg(url)
 				.then(image => ({
@@ -54,7 +85,7 @@ export default class App extends PureComponent {
 				.then(image =>
 					this.setState(
 						state => ({
-							images: [...state.images, image]
+							images: { ...state.images, [data.name]: image }
 						}),
 						() => resolve(this.state.images)
 					)
@@ -64,35 +95,40 @@ export default class App extends PureComponent {
 	}
 
 	loadImages() {
-		const addLogoProductImage = this.addImage(tshirt, {
+		const addLogoProductImage = this.setImage(tshirts[this.state.imageNumers[PRODUCT_IMAGE]], {
 			x: 15,
 			y: 15,
-			name: 'productImage'
+			name: PRODUCT_IMAGE
 		});
-		const addLogoImage = this.addImage(logo, {
+
+		const addLogoImage = this.setImage(this.state.imageNumers[LOGO_IMAGE], {
 			x: 10,
 			y: 10,
-			name: 'logoImage'
+			name: LOGO_IMAGE
 		});
 
 		Promise.all([addLogoImage, addLogoProductImage]).then(values => {
 			this.setState(state => ({
-				images: state
+				images: setCorrectImagesPositions(state)
 			}));
 		});
 	}
 
 	onHandleClick() {
-		this.setState(state => {
-			const newNumber = (state.number + 1) % images.length;
-			const imgs = changeImageByName({
-				images: state.images,
-				name: 'logoImage',
-				func: image => ({ ...image, image: images[newNumber] })
-			});
+		const { selectedName, imageNumers } = this.state;
+		if (!selectedName) {
+			return;
+		}
 
-			return { images: imgs, number: newNumber };
-		});
+		const newNumber = (imageNumers[selectedName] + 1) % IMAGES_LIBRARY[selectedName].length;
+		const newImage = IMAGES_LIBRARY[selectedName][newNumber];
+		this.changeImage(newImage, selectedName);
+		this.setState(state => ({
+			imageNumers: {
+				...state.imageNumers,
+				[state.selectedName]: newNumber
+			}
+		}));
 	}
 
 	onSave() {
@@ -118,7 +154,11 @@ export default class App extends PureComponent {
 	changeSelectedName(selectedName) {
 		this.setState({ selectedName: selectedName });
 	}
-
+	get selectedImage() {
+		console.log('!!this.state.images', this.state.images);
+		console.log('!!this.state.selectedName', this.state.selectedName);
+		return getImageByName({ images: this.state.images, name: this.state.selectedName });
+	}
 	render() {
 		return (
 			<div>
@@ -136,13 +176,13 @@ export default class App extends PureComponent {
 					</div>
 				</div>
 				<div style={{ backgroundColor: 'grey' }}>
-					{this.state.selectedName ? (
+					{this.selectedImage ? (
 						<input
 							id="typeinp"
 							type="range"
 							min="10"
 							max="500"
-							value={this.state.images.find(image => image.name === this.state.selectedName).height}
+							value={this.selectedImage.height}
 							onChange={this.handleChange}
 							step="5"
 						/>
@@ -155,4 +195,35 @@ export default class App extends PureComponent {
 		);
 	}
 }
-// img={images[this.state.number]}
+
+function setCorrectImagesPositions(state) {
+	let tmpImages = state.images;
+
+	tmpImages = setCorrectImagePosition({
+		images: tmpImages,
+		canvas: {
+			width: state.width,
+			height: state.height
+		},
+		imageName: LOGO_IMAGE,
+		size: {
+			width: 150,
+			height: 150
+		}
+	});
+
+	tmpImages = setCorrectImagePosition({
+		images: tmpImages,
+		canvas: {
+			width: state.width,
+			height: state.height
+		},
+		imageName: PRODUCT_IMAGE,
+		size: {
+			width: 480,
+			height: 480
+		}
+	});
+
+	return tmpImages;
+}

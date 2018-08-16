@@ -2,7 +2,11 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { Stage, Layer } from 'react-konva';
 import Image from './image.js';
-// import { printImageData, getImageByName, changeImageByName } from '../utils/utils';
+import {
+	printImageData,
+	// getImageByName,
+	changeImageByName
+} from '../utils/utils';
 import TransformerComponent from './transformer_component';
 
 export default class ReactCanvas extends PureComponent {
@@ -26,10 +30,14 @@ export default class ReactCanvas extends PureComponent {
 	}
 
 	updateImagePosition(data) {
-		//this.printImageData('new images', data);
-		const changeImage = image => (image.name === data.name ? { ...image, ...data } : image);
-		const changeImages = images => images.map(changeImage);
-		this.props.updateImagePosition(changeImages(this.props.images));
+		console.log('data', data);
+		const newImagePositions = changeImageByName({
+			images: this.props.images,
+			name: data.name,
+			func: image => ({ ...image, ...data })
+		});
+
+		this.props.updateImagePosition(newImagePositions);
 	}
 
 	handleStageMouseDown = e => {
@@ -65,7 +73,9 @@ export default class ReactCanvas extends PureComponent {
 	}
 
 	printImage(image, index) {
-		return (
+		console.log('##image', image);
+
+		return image ? (
 			<Image
 				key={index}
 				image={image.image}
@@ -77,18 +87,19 @@ export default class ReactCanvas extends PureComponent {
 				name={image.name}
 				onTransform={this.updateImagePosition}
 			/>
-		);
+		) : null;
 	}
 
 	render() {
 		const { width, height, images } = this.props;
-		//const images = [];
-		console.log('!!!!!!!!!!!!!', images);
-		console.log('!!!!!!!!!!!!!', images.map);
 		return (
 			<Stage width={width} height={height} ref={node => (this.stageRef = node)} onMouseDown={this.handleStageMouseDown}>
 				<Layer>
-					{/* {images ? images.map(this.printImage) : null} */}
+					{images
+						? Object.keys(images)
+								.map(imageName => images[imageName])
+								.map(this.printImage)
+						: null}
 					<TransformerComponent selectedShapeName={this.state.selectedName} />
 				</Layer>
 			</Stage>
@@ -97,13 +108,13 @@ export default class ReactCanvas extends PureComponent {
 }
 
 ReactCanvas.propTypes = {
-	images: PropTypes.element.array,
-	width: PropTypes.element.number,
-	height: PropTypes.element.number
+	images: PropTypes.object.isRequired,
+	width: PropTypes.number.isRequired,
+	height: PropTypes.number.isRequired
 };
 
 ReactCanvas.defaultProps = {
-	images: [],
-	width: 500,
-	height: 500
+	// images: [],
+	// width: 500,
+	// height: 500
 };

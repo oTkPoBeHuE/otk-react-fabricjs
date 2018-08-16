@@ -1,7 +1,8 @@
 import React, { PureComponent } from 'react';
+import PropTypes from 'prop-types';
 import { Image } from 'react-konva';
 
-export default class VaderImage extends PureComponent {
+export default class CustomImage extends PureComponent {
 	handleChange = e => {
 		const shape = e.target;
 		// take a look into width and height properties
@@ -24,21 +25,41 @@ export default class VaderImage extends PureComponent {
 			<Image
 				draggable
 				image={this.props.image}
+				name={this.props.name}
 				x={this.props.x}
 				y={this.props.y}
-				scaleX={1}
-				scaleY={1}
 				width={this.props.width}
 				height={this.props.height}
+				scaleX={1}
+				scaleY={1}
 				rotation={this.props.rotation}
 				onDragEnd={this.handleChange}
 				onTransformEnd={this.handleChange}
-				name={this.props.name}
 				ref={node => {
 					this.imageNode = node;
 				}}
-				offset={1}
+				// offset={1}
 			/>
 		);
 	}
 }
+
+CustomImage.propTypes = {
+	image: PropTypes.instanceOf(window.Image),
+	width: PropTypes.number.isRequired,
+	height: PropTypes.number.isRequired,
+	x: PropTypes.number.isRequired,
+	y: PropTypes.number.isRequired,
+	rotation: PropTypes.number.isRequired,
+	name: PropTypes.string.isRequired
+};
+
+CustomImage.defaultProps = {
+	// image: new window.Image(),
+	// width: 500,
+	// height: 500,
+	// rotation: 0,
+	// x: 0,
+	// y: 0,
+	// name: ''
+};
